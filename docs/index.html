@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPI® Strategy - Secure Compound Interest Account™</title>
+    <meta name="description" content="MPI® Strategy - The revolutionary approach to retirement planning through secure compound interest growth. Potentially triple your retirement income.">
+    <meta name="keywords" content="MPI Strategy, compound interest, retirement planning, financial planning, investment strategy">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="https://compoundinterest.com/wp-content/uploads/2022/08/ICONS.png">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%);
+            height: 5px;
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            height: 60px;
+            width: auto;
+        }
+
+        .nav {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav a:hover {
+            color: #ffcc00;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%);
+            color: #333;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #333;
+            border: 2px solid #333;
+        }
+
+        .btn-secondary:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
+            padding: 120px 0 80px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .divider {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%);
+            margin: 0 auto 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 80px 0;
+            background: #fff;
+        }
+
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .contact-info {
+            margin: 30px 0;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .contact-item i {
+            color: #ffcc00;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            width: 20px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #333;
+            color: #fff;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .nav {
+                display: none;
+            }
+            
+            .contact-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top"></div>
+        <div class="container">
+            <div class="header-main">
+                <img src="https://compoundinterest.com/wp-content/uploads/2022/08/ICONS.png" alt="MPI Logo" class="logo">
+                
+                <nav class="nav">
+                    <a href="#home">Home</a>
+                    <a href="#strategy">Strategy</a>
+                    <a href="#solutions">Solutions</a>
+                    <a href="#contact">Contact</a>
+                </nav>
+                
+                <div class="auth-buttons">
+                    <a href="login.html" class="btn btn-secondary">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="register.html" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>MPI® Strategy</h1>
+            <div class="subtitle">Secure Compound Interest Account™</div>
+            <p>The revolutionary approach to retirement planning that can potentially triple your retirement income through the power of secure compound interest growth.</p>
+            
+            <div class="hero-buttons">
+                <a href="register.html" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i> Start Your Journey
+                </a>
+                <a href="#contact" class="btn btn-secondary">
+                    <i class="fas fa-phone"></i> Free Consultation
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Strategy Section -->
+    <section class="features" id="strategy">
+        <div class="container">
+            <div class="section-title">
+                <h2>The MPI® Strategy Advantage</h2>
+                <div class="divider"></div>
+                <p>Discover how our proven strategy can transform your financial future through secure compound interest growth.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <img src="https://compoundinterest.com/wp-content/uploads/2022/08/cr_website-icons-06.png" alt="Compound Growth" class="feature-icon">
+                    <h3>Compound Interest Power</h3>
+                    <p>Harness the mathematical certainty of compound interest to build substantial wealth over time.</p>
+                    <a href="#contact" class="btn btn-primary">Learn More</a>
+                </div>
+                
+                <div class="feature-card">
+                    <img src="https://compoundinterest.com/wp-content/uploads/2022/08/cr_website-icons-07.png" alt="Security" class="feature-icon">
+                    <h3>Secure Growth</h3>
+                    <p>Your investments are protected while still achieving significant growth potential.</p>
+                    <a href="#contact" class="btn btn-primary">Learn More</a>
+                </div>
+                
+                <div class="feature-card">
+                    <img src="https://compoundinterest.com/wp-content/uploads/2022/08/cr_website-icons-08.png" alt="Retirement" class="feature-icon">
+                    <h3>Retirement Ready</h3>
+                    <p>Build a retirement that allows you to maintain your lifestyle without downsizing.</p>
+                    <a href="#contact" class="btn btn-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section class="features" id="solutions" style="background: #fff;">
+        <div class="container">
+            <div class="section-title">
+                <h2>Rollover Solutions</h2>
+                <div class="divider"></div>
+                <p>Transform your existing retirement accounts into a powerful MPI® Strategy.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <img src="https://compoundinterest.com/wp-content/uploads/2022/08/cr_website-icons-01.png" alt="401k Rollover" class="feature-icon">
+                    <h3>401(k) Rollover</h3>
+                    <p>Roll your 401(k) into an MPI® Strategy and potentially increase your retirement by up to 3X</p>
+                    <a href="#contact" class="btn btn-primary">Learn More</a>
+                </div>
+                
+                <div class="feature-card">
+                    <img src="https://compoundinterest.com/wp-content/uploads/2022/08/cr_website-icons-02.png" alt="IRA Rollover" class="feature-icon">
+                    <h3>IRA Rollover</h3>
+                    <p>Convert your Traditional or Roth IRA into a tax-advantaged MPI® Strategy</p>
+                    <a href="#contact" class="btn btn-primary">Learn More</a>
+                </div>
+                
+                <div class="feature-card">
+                    <img src="https://compoundinterest.com/wp-content/uploads/2022/08/cr_website-icons-03.png" alt="TSP Rollover" class="feature-icon">
+                    <h3>TSP Rollover</h3>
+                    <p>Federal employees can rollover their Thrift Savings Plan into an MPI® Strategy</p>
+                    <a href="#contact" class="btn btn-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>Contact MPI® Unlimited</h2>
+                <div class="divider"></div>
+                <p>Ready to start your journey to financial freedom? Get in touch with our team today.</p>
+            </div>
+            
+            <div class="contact-content">
+                <div>
+                    <h3>Get Your Free Consultation</h3>
+                    <p>Speak with one of our licensed MPI® Strategy specialists to learn how you can potentially increase your retirement by up to 3X over traditional retirement accounts.</p>
+                    
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span><strong>Email:</strong> Mpisecuredcomparedinterest@gmail.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span><strong>Phone:</strong> +1 239 487 4213</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-clock"></i>
+                            <span><strong>Hours:</strong> Monday - Friday, 9 AM - 6 PM EST</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fab fa-bitcoin"></i>
+                            <span><strong>Bitcoin:</strong> 1DhLUp1pkeitZremqKu8fA2BdB9zqZ21QC</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-buttons">
+                        <a href="mailto:Mpisecuredcomparedinterest@gmail.com" class="btn btn-primary">Email Us</a>
+                        <a href="tel:+12394874213" class="btn btn-secondary">Call Now</a>
+                    </div>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%); padding: 40px; border-radius: 15px; text-align: center; color: #333;">
+                    <h3 style="margin-bottom: 20px;">Schedule Your Free Consultation</h3>
+                    <p style="margin-bottom: 30px;">No obligation. No pressure. Just honest answers about your financial future.</p>
+                    <div style="background: white; padding: 30px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="color: #333; margin-bottom: 15px;">What You'll Learn:</h4>
+                        <ul style="text-align: left; color: #333; list-style: none; padding: 0;">
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #ffcc00; margin-right: 10px;"></i>How the MPI® Strategy works</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #ffcc00; margin-right: 10px;"></i>Your potential retirement increase</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #ffcc00; margin-right: 10px;"></i>Tax advantages and benefits</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check" style="color: #ffcc00; margin-right: 10px;"></i>Next steps for your situation</li>
+                        </ul>
+                    </div>
+                    <a href="register.html" class="btn btn-secondary" style="background: #333; color: white;">Get Started Today</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 MPI® UNLIMITED LLC. All Rights Reserved.</p>
+            <p>MPI® Strategy - Secure Compound Interest Account™</p>
+            <p>Contact: Mpisecuredcomparedinterest@gmail.com | +1 239 487 4213</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to header
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.backdropFilter = 'blur(10px)';
+            } else {
+                header.style.background = '#fff';
+                header.style.backdropFilter = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
