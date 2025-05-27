@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MPI® Strategy</title>
+    <meta name="description" content="Your personal MPI® dashboard to track your secure compound interest growth.">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e4e4e4;
+        }
+
+        .dashboard-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-card h3 i {
+            color: #ffcc00;
+            font-size: 1.2rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #ffcc00, #ffd700);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e4e4e4;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            border-color: #ffcc00;
+            background: #fffbf0;
+        }
+
+        .action-btn i {
+            color: #ffcc00;
+            font-size: 1.2rem;
+        }
+
+        .welcome-message {
+            background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%);
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .recent-activity {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: #ffcc00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .activity-date {
+            color: #666;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top"></div>
+        <div class="header-main">
+            <a href="index.html">
+                <img src="https://compoundinterest.com/wp-content/uploads/2022/08/ICONS.png" alt="MPI Logo" class="logo">
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="nav-menu">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="index.html#about" class="nav-link">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="index.html#strategy" class="nav-link">What is MPI®?</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="index.html#contact" class="nav-link">Contact</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- User Menu -->
+            <div class="auth-buttons">
+                <div class="user-menu">
+                    <button class="user-menu-toggle btn btn-secondary">
+                        <i class="fas fa-user"></i> <span id="userName">User</span>
+                    </button>
+                    <div class="user-dropdown">
+                        <a href="dashboard.html" class="dropdown-item">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                        <a href="#" class="dropdown-item" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+        <div class="welcome-message">
+            <h2>Welcome to Your MPI® Dashboard!</h2>
+            <p>Track your secure compound interest growth and manage your financial future.</p>
+        </div>
+
+        <div class="dashboard-header">
+            <h1>Your MPI® Portfolio</h1>
+            <p>Secure Compound Interest Account Overview</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h3><i class="fas fa-wallet"></i> Account Balance</h3>
+                <div class="stat-value" id="currentBalance">$0</div>
+                <div class="stat-label">Current Cash Value</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="balanceProgress" style="width: 0%;"></div>
+                </div>
+                <small id="progressText">0% of target goal</small>
+            </div>
+
+            <div class="dashboard-card">
+                <h3><i class="fas fa-chart-line"></i> Total Profit</h3>
+                <div class="stat-value" id="currentProfit">$0</div>
+                <div class="stat-label">Compound Interest Earned</div>
+                <div style="color: #28a745; font-size: 0.9rem; margin-top: 10px;">
+                    <i class="fas fa-arrow-up"></i> Growing Steadily
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h3><i class="fas fa-piggy-bank"></i> Total Deposited</h3>
+                <div class="stat-value" id="totalDeposited">$0</div>
+                <div class="stat-label">Your Investment</div>
+                <div style="color: #17a2b8; font-size: 0.9rem; margin-top: 10px;">
+                    <i class="fas fa-coins"></i> Initial + Top-ups
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h3><i class="fas fa-target"></i> Target Goal</h3>
+                <div class="stat-value" id="targetCash">$500,000</div>
+                <div class="stat-label">Retirement Target</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="goalProgress" style="width: 0%;"></div>
+                </div>
+                <small id="goalProgressText">0% complete</small>
+            </div>
+        </div>
+
+        <!-- Deposit Information Section -->
+        <div style="background: linear-gradient(135deg, #ffcc00 0%, #ffd700 100%); color: #333; padding: 30px; border-radius: 15px; margin: 30px 0; text-align: center;">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-bitcoin"></i> Make a Deposit</h3>
+            <p style="margin-bottom: 20px;">Send Bitcoin to the address below to add funds to your account:</p>
+            <div style="background: white; padding: 20px; border-radius: 10px; margin: 20px 0; display: inline-block;">
+                <div id="bitcoinAddress" style="font-family: monospace; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;">Loading...</div>
+                <div id="qrCode" style="margin: 15px 0;"></div>
+                <button onclick="copyBitcoinAddress()" class="btn btn-secondary" style="margin-top: 10px;">
+                    <i class="fas fa-copy"></i> Copy Address
+                </button>
+            </div>
+            <p style="font-size: 0.9rem; opacity: 0.8;">Minimum deposit: $100 USD equivalent • Deposits processed within 24 hours</p>
+        </div>
+
+        <div class="quick-actions">
+            <button class="action-btn" onclick="showDepositInfo()">
+                <i class="fas fa-plus-circle"></i>
+                <span>View Deposit Info</span>
+            </button>
+            <button class="action-btn" onclick="requestWithdrawal()">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Request Withdrawal</span>
+            </button>
+            <button class="action-btn" onclick="viewTransactions()">
+                <i class="fas fa-history"></i>
+                <span>Transaction History</span>
+            </button>
+            <button class="action-btn" onclick="contactSupport()">
+                <i class="fas fa-phone"></i>
+                <span>Contact Support</span>
+            </button>
+        </div>
+
+        <div class="recent-activity">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Monthly Contribution Processed</div>
+                    <div class="activity-date">January 15, 2024</div>
+                </div>
+                <div style="color: #28a745; font-weight: bold;">+$1,500</div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Interest Credited</div>
+                    <div class="activity-date">January 1, 2024</div>
+                </div>
+                <div style="color: #28a745; font-weight: bold;">+$2,340</div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Annual Statement Generated</div>
+                    <div class="activity-date">December 31, 2023</div>
+                </div>
+                <div style="color: #666;">View</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 MPI® UNLIMITED LLC. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        let dashboardData = null;
+        let bitcoinAddressData = null;
+
+        // Check if user is logged in and load dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = getCurrentUser();
+            const token = getAuthToken();
+
+            if (!user || !token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Update user name in header
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement && user.firstName) {
+                userNameElement.textContent = `${user.firstName} ${user.lastName}`;
+            }
+
+            // Initialize user menu
+            initializeUserMenu();
+
+            // Load dashboard data
+            loadDashboardData();
+            loadDepositInfo();
+        });
+
+        // Initialize user menu
+        function initializeUserMenu() {
+            const userMenuToggle = document.querySelector('.user-menu-toggle');
+            const userDropdown = document.querySelector('.user-dropdown');
+
+            userMenuToggle?.addEventListener('click', function() {
+                userDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.user-menu')) {
+                    userDropdown?.classList.remove('show');
+                }
+            });
+        }
+
+        // Load dashboard data from API
+        async function loadDashboardData() {
+            const token = getAuthToken();
+
+            try {
+                const response = await fetch('/api/user/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    dashboardData = data.data;
+                    updateDashboardUI(data.data);
+                } else {
+                    console.error('Failed to load dashboard data:', data.message);
+                }
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+            }
+        }
+
+        // Update dashboard UI with real data
+        function updateDashboardUI(data) {
+            const investment = data.investment;
+
+            // Update balance and progress
+            document.getElementById('currentBalance').textContent = formatCurrency(investment.current_balance || 0);
+            document.getElementById('currentProfit').textContent = formatCurrency(investment.current_profit || 0);
+            document.getElementById('totalDeposited').textContent = formatCurrency(investment.total_deposited || 0);
+            document.getElementById('targetCash').textContent = formatCurrency(investment.target_cash || 500000);
+
+            // Update progress bars
+            const progressPercentage = data.progressPercentage || 0;
+            document.getElementById('balanceProgress').style.width = `${Math.min(progressPercentage, 100)}%`;
+            document.getElementById('goalProgress').style.width = `${Math.min(progressPercentage, 100)}%`;
+            document.getElementById('progressText').textContent = `${progressPercentage.toFixed(1)}% of target goal`;
+            document.getElementById('goalProgressText').textContent = `${progressPercentage.toFixed(1)}% complete`;
+
+            // Update recent activity
+            updateRecentActivity(data.transactions);
+        }
+
+        // Update recent activity section
+        function updateRecentActivity(transactions) {
+            const container = document.querySelector('.recent-activity');
+            const activityContainer = container.querySelector('.activity-item')?.parentElement || container;
+
+            // Clear existing activity items
+            const existingItems = activityContainer.querySelectorAll('.activity-item');
+            existingItems.forEach(item => item.remove());
+
+            if (!transactions || transactions.length === 0) {
+                const noActivity = document.createElement('p');
+                noActivity.textContent = 'No recent activity';
+                noActivity.style.textAlign = 'center';
+                noActivity.style.color = '#666';
+                activityContainer.appendChild(noActivity);
+                return;
+            }
+
+            transactions.slice(0, 5).forEach(tx => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+
+                const iconClass = getTransactionIcon(tx.transaction_type);
+                const amount = tx.transaction_type === 'withdrawal' ? `-$${tx.amount}` : `+$${tx.amount}`;
+                const amountColor = tx.transaction_type === 'withdrawal' ? '#dc3545' : '#28a745';
+
+                activityItem.innerHTML = `
+                    <div class="activity-icon">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">${formatTransactionType(tx.transaction_type)}</div>
+                        <div class="activity-date">${formatDate(tx.created_at)}</div>
+                    </div>
+                    <div style="color: ${amountColor}; font-weight: bold;">${amount}</div>
+                `;
+
+                activityContainer.appendChild(activityItem);
+            });
+        }
+
+        // Load Bitcoin deposit information
+        async function loadDepositInfo() {
+            const token = getAuthToken();
+
+            try {
+                const response = await fetch('/api/user/deposit-info', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bitcoinAddressData = data.data;
+                    document.getElementById('bitcoinAddress').textContent = data.data.bitcoinAddress;
+
+                    // Display QR code
+                    const qrContainer = document.getElementById('qrCode');
+                    qrContainer.innerHTML = `<img src="${data.data.qrCode}" alt="Bitcoin QR Code" style="max-width: 200px;">`;
+                }
+            } catch (error) {
+                console.error('Deposit info load error:', error);
+            }
+        }
+
+        // Utility functions
+        function getAuthToken() {
+            return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function getTransactionIcon(type) {
+            switch(type) {
+                case 'deposit': return 'fas fa-arrow-down';
+                case 'withdrawal': return 'fas fa-arrow-up';
+                case 'profit': return 'fas fa-chart-line';
+                case 'topup': return 'fas fa-plus';
+                default: return 'fas fa-exchange-alt';
+            }
+        }
+
+        function formatTransactionType(type) {
+            switch(type) {
+                case 'deposit': return 'Deposit Received';
+                case 'withdrawal': return 'Withdrawal Processed';
+                case 'profit': return 'Interest Credited';
+                case 'topup': return 'Monthly Top-up';
+                default: return 'Transaction';
+            }
+        }
+
+        // Action functions
+        function copyBitcoinAddress() {
+            if (bitcoinAddressData) {
+                navigator.clipboard.writeText(bitcoinAddressData.bitcoinAddress).then(() => {
+                    showNotification('Bitcoin address copied to clipboard!', 'success');
+                });
+            }
+        }
+
+        function showDepositInfo() {
+            document.querySelector('[style*="background: linear-gradient(135deg, #ffcc00"]').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        function requestWithdrawal() {
+            // Implement withdrawal request modal
+            showNotification('Withdrawal request feature coming soon!', 'info');
+        }
+
+        function viewTransactions() {
+            // Implement transaction history modal
+            showNotification('Transaction history feature coming soon!', 'info');
+        }
+
+        function contactSupport() {
+            showNotification('Please email support@mpi-strategy.com for assistance', 'info');
+        }
+
+        // Make functions global
+        window.copyBitcoinAddress = copyBitcoinAddress;
+        window.showDepositInfo = showDepositInfo;
+        window.requestWithdrawal = requestWithdrawal;
+        window.viewTransactions = viewTransactions;
+        window.contactSupport = contactSupport;
+    </script>
+</body>
+</html>

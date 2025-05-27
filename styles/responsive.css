@@ -1,0 +1,279 @@
+/* Responsive Design */
+
+/* Tablet Styles */
+@media (max-width: 1024px) {
+    .header-main {
+        padding: 13px 20px;
+    }
+
+    .nav-menu {
+        display: none;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .hero h1 {
+        font-size: 2.8rem;
+    }
+
+    .hero h2 {
+        font-size: 1.5rem;
+    }
+
+    .about-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .header-main {
+        padding: 10px 15px;
+    }
+
+    .logo {
+        height: 25px;
+    }
+
+    .hero {
+        min-height: 70vh;
+        background-attachment: scroll;
+    }
+
+    .hero h1 {
+        font-size: 2.2rem;
+        margin-bottom: 15px;
+    }
+
+    .hero h2 {
+        font-size: 1.2rem;
+        margin-bottom: 25px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .btn-large {
+        padding: 12px 25px;
+        font-size: 1rem;
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+    .features,
+    .about {
+        padding: 60px 0;
+    }
+
+    .section-title h2 {
+        font-size: 2rem;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .feature-card {
+        padding: 30px 20px;
+    }
+
+    .about-text h2 {
+        font-size: 2rem;
+    }
+
+    .about-text p {
+        font-size: 1rem;
+    }
+
+    .footer {
+        padding: 40px 0 20px;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .auth-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero h2 {
+        font-size: 1rem;
+    }
+
+    .hero-content {
+        padding: 0 15px;
+    }
+
+    .section-title h2 {
+        font-size: 1.8rem;
+    }
+
+    .feature-card {
+        padding: 25px 15px;
+    }
+
+    .about-text h2 {
+        font-size: 1.8rem;
+    }
+
+    .mobile-menu {
+        padding: 15px;
+    }
+}
+
+/* Desktop Large Screens */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1400px;
+    }
+
+    .header-main {
+        max-width: 1600px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header,
+    .mobile-menu,
+    .auth-buttons,
+    .hero-buttons {
+        display: none;
+    }
+
+    .hero {
+        background: none;
+        color: #333;
+        min-height: auto;
+        padding: 20px 0;
+    }
+
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .logo,
+    .feature-icon,
+    .dropdown-icon {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .hero {
+        background-attachment: scroll;
+    }
+}
+
+/* Force Light Mode - Override Dark Mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #ffffff !important;
+        color: #333 !important;
+    }
+
+    .header {
+        background-color: #ffffff !important;
+        border-bottom-color: #e4e4e4 !important;
+    }
+
+    .nav-link {
+        color: #000 !important;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background-color: #e4e4e4 !important;
+    }
+
+    .dropdown {
+        background-color: #ffffff !important;
+        border-color: #ccc !important;
+    }
+
+    .dropdown-item {
+        color: #000 !important;
+        border-bottom-color: #e4e4e4 !important;
+    }
+
+    .dropdown-item:hover {
+        background-color: #e4e4e4 !important;
+    }
+
+    .feature-card {
+        background-color: #ffffff !important;
+        color: #333 !important;
+    }
+
+    .about {
+        background-color: #ffffff !important;
+    }
+
+    .features {
+        background-color: #f8f9fa !important;
+    }
+
+    .mobile-menu {
+        background-color: #ffffff !important;
+    }
+
+    .mobile-menu-header {
+        border-bottom-color: #e4e4e4 !important;
+    }
+
+    .mobile-nav-item {
+        border-bottom-color: #e4e4e4 !important;
+    }
+
+    .mobile-nav-link {
+        color: #333 !important;
+    }
+}
