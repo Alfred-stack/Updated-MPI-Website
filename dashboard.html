@@ -421,6 +421,14 @@
                     updateDashboardUI(data.data);
                 } else {
                     console.error('Failed to load dashboard data:', data.message);
+                    // If unauthorized, redirect to login
+                    if (response.status === 401) {
+                        localStorage.removeItem('currentUser');
+                        localStorage.removeItem('authToken');
+                        sessionStorage.removeItem('currentUser');
+                        sessionStorage.removeItem('authToken');
+                        window.location.href = 'login.html';
+                    }
                 }
             } catch (error) {
                 console.error('Dashboard load error:', error);
@@ -553,11 +561,50 @@
 
         // Action functions
         function copyBitcoinAddress() {
-            if (bitcoinAddressData) {
-                navigator.clipboard.writeText(bitcoinAddressData.bitcoinAddress).then(() => {
-                    showNotification('Bitcoin address copied to clipboard!', 'success');
-                });
+            if (bitcoinAddressData && bitcoinAddressData.bitcoinAddress) {
+                // Try modern clipboard API first
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(bitcoinAddressData.bitcoinAddress).then(() => {
+                        showNotification('Bitcoin address copied to clipboard!', 'success');
+                    }).catch(err => {
+                        console.error('Clipboard API failed:', err);
+                        fallbackCopyTextToClipboard(bitcoinAddressData.bitcoinAddress);
+                    });
+                } else {
+                    // Fallback for older browsers
+                    fallbackCopyTextToClipboard(bitcoinAddressData.bitcoinAddress);
+                }
+            } else {
+                showNotification('Bitcoin address not available yet. Please wait...', 'error');
             }
+        }
+
+        // Fallback copy function for older browsers
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showNotification('Bitcoin address copied to clipboard!', 'success');
+                } else {
+                    showNotification('Failed to copy address. Please copy manually.', 'error');
+                }
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                showNotification('Copy failed. Please copy the address manually.', 'error');
+            }
+
+            document.body.removeChild(textArea);
         }
 
         function showDepositInfo() {

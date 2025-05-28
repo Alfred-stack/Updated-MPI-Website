@@ -25,7 +25,7 @@ function checkAdminAuth() {
     })
     .then(response => response.json())
     .then(data => {
-        if (!data.success || !data.user.adminId) {
+        if (!data.success || !data.user || !data.user.adminId) {
             showAdminLogin();
         } else {
             document.getElementById('adminName').textContent = data.user.username;
@@ -56,11 +56,6 @@ function showAdminLogin() {
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
                 </form>
-                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem;">
-                    <strong>Demo Admin Credentials:</strong><br>
-                    Username: mpi_admin<br>
-                    Password: MPI@Admin2024!Secure
-                </div>
             </div>
         </div>
     `;
@@ -79,7 +74,7 @@ async function handleAdminLogin(e) {
     const errorDiv = document.getElementById('loginError');
 
     try {
-        const response = await fetch('/api/auth/admin/login', {
+        const response = await fetch('/admin/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -322,6 +317,8 @@ async function editUserInvestment(userId) {
             document.getElementById('editMonthlyTopup').value = user.monthly_topup || 0;
             document.getElementById('editCurrentProfit').value = user.current_profit || 0;
             document.getElementById('editTargetCash').value = user.target_cash || 500000;
+            document.getElementById('editCurrentBalance').value = user.current_balance || 0;
+            document.getElementById('editTotalDeposited').value = user.total_deposited || 0;
 
             document.getElementById('editInvestmentModal').style.display = 'block';
         }
@@ -339,7 +336,9 @@ async function handleEditInvestment(e) {
         initialDeposit: parseFloat(document.getElementById('editInitialDeposit').value),
         monthlyTopup: parseFloat(document.getElementById('editMonthlyTopup').value),
         currentProfit: parseFloat(document.getElementById('editCurrentProfit').value),
-        targetCash: parseFloat(document.getElementById('editTargetCash').value)
+        targetCash: parseFloat(document.getElementById('editTargetCash').value),
+        currentBalance: parseFloat(document.getElementById('editCurrentBalance').value),
+        totalDeposited: parseFloat(document.getElementById('editTotalDeposited').value)
     };
 
     try {
@@ -469,6 +468,222 @@ async function sendSummary(userId) {
     }
 }
 
+// Load withdrawals
+async function loadWithdrawals() {
+    try {
+        const response = await fetch('/api/admin/withdrawals', {
+            headers: {
+                'Authorization': `Bearer ${adminToken}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            displayWithdrawalsTable(data.data.withdrawals);
+        }
+    } catch (error) {
+        console.error('Load withdrawals error:', error);
+    }
+}
+
+// Display withdrawals table
+function displayWithdrawalsTable(withdrawals) {
+    const container = document.getElementById('withdrawalsTable');
+
+    if (!withdrawals || withdrawals.length === 0) {
+        container.innerHTML = '<p>No withdrawal requests found</p>';
+        return;
+    }
+
+    const html = `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${withdrawals.map(wd => `
+                    <tr>
+                        <td>${wd.first_name} ${wd.last_name}</td>
+                        <td>${formatCurrency(wd.amount)}</td>
+                        <td style="word-break: break-all; max-width: 200px;">${wd.withdrawal_address}</td>
+                        <td><span class="status-badge status-${wd.status}">${wd.status}</span></td>
+                        <td>${formatDate(wd.requested_at)}</td>
+                        <td>
+                            ${wd.status === 'pending' ? `
+                                <button class="btn btn-small btn-success" onclick="processWithdrawal(${wd.id}, 'approve')">Approve</button>
+                                <button class="btn btn-small btn-danger" onclick="processWithdrawal(${wd.id}, 'reject')">Reject</button>
+                            ` : wd.receipt_url ? `
+                                <a href="${wd.receipt_url}?print=true" target="_blank" class="btn btn-small btn-info">View Receipt</a>
+                            ` : 'N/A'}
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+
+    container.innerHTML = html;
+}
+
+// Process withdrawal
+async function processWithdrawal(requestId, action) {
+    const reason = action === 'reject' ? prompt('Enter rejection reason:') : null;
+    const transactionHash = action === 'approve' ? prompt('Enter transaction hash (optional):') : null;
+
+    if (action === 'reject' && !reason) {
+        showNotification('Rejection reason is required', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/withdrawals/${requestId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                action,
+                reason,
+                transactionHash
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showNotification(`Withdrawal ${action}d successfully`, 'success');
+            loadWithdrawals();
+            loadDashboardData(); // Refresh dashboard stats
+
+            if (action === 'approve' && data.receiptUrl) {
+                // Open receipt in new tab
+                window.open(data.receiptUrl + '?print=true', '_blank');
+            }
+        } else {
+            showNotification(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Process withdrawal error:', error);
+        showNotification('Failed to process withdrawal', 'error');
+    }
+}
+
+// Load transactions
+async function loadTransactions() {
+    try {
+        const response = await fetch('/api/admin/transactions', {
+            headers: {
+                'Authorization': `Bearer ${adminToken}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            displayTransactionsTable(data.data.transactions);
+        }
+    } catch (error) {
+        console.error('Load transactions error:', error);
+    }
+}
+
+// Display transactions table
+function displayTransactionsTable(transactions) {
+    const container = document.getElementById('transactionsTable');
+
+    if (!transactions || transactions.length === 0) {
+        container.innerHTML = '<p>No transactions found</p>';
+        return;
+    }
+
+    const html = `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${transactions.map(tx => `
+                    <tr>
+                        <td>${tx.first_name} ${tx.last_name}</td>
+                        <td>${tx.transaction_type.toUpperCase()}</td>
+                        <td>${formatCurrency(tx.amount)}</td>
+                        <td><span class="status-badge status-${tx.status}">${tx.status}</span></td>
+                        <td>${formatDate(tx.created_at)}</td>
+                        <td>
+                            ${tx.receipt_url ? `
+                                <a href="${tx.receipt_url}?print=true" target="_blank" class="btn btn-small btn-info">View Receipt</a>
+                            ` : 'N/A'}
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+
+    container.innerHTML = html;
+}
+
+// Add transaction for user
+async function addTransaction(userId) {
+    const type = prompt('Transaction type (deposit/withdrawal/profit/topup):');
+    const amount = prompt('Enter amount:');
+    const description = prompt('Enter description (optional):');
+
+    if (!type || !['deposit', 'withdrawal', 'profit', 'topup'].includes(type.toLowerCase())) {
+        showNotification('Invalid transaction type', 'error');
+        return;
+    }
+
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+        showNotification('Please enter a valid amount', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/transactions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                type: type.toLowerCase(),
+                amount: parseFloat(amount),
+                description
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showNotification('Transaction added successfully', 'success');
+            loadUsers();
+            loadDashboardData();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Add transaction error:', error);
+        showNotification('Failed to add transaction', 'error');
+    }
+}
+
 // Global functions
 window.showSection = showSection;
 window.editUserInvestment = editUserInvestment;
@@ -476,3 +691,5 @@ window.sendDepositSlip = sendDepositSlip;
 window.sendSummary = sendSummary;
 window.adminLogout = adminLogout;
 window.closeModal = closeModal;
+window.processWithdrawal = processWithdrawal;
+window.addTransaction = addTransaction;

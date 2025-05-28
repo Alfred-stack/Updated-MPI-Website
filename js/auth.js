@@ -20,7 +20,7 @@ function initAuthForms() {
     }
 }
 
-// Handle Login Form Submission
+// Handle Login Form Submission - User Login Only
 async function handleLogin(e) {
     e.preventDefault();
 
@@ -62,7 +62,7 @@ async function handleLogin(e) {
 
             // Redirect to dashboard
             setTimeout(() => {
-                window.location.href = 'dashboard.html';
+                window.location.href = '/dashboard';
             }, 1500);
         } else {
             showFormError(form, data.message || 'Invalid email or password');
@@ -336,61 +336,50 @@ function simulateApiCall(delay) {
     return new Promise(resolve => setTimeout(resolve, delay));
 }
 
-// Mock Authentication Functions (replace with real API calls)
-function authenticateUser(email, password) {
-    // Mock user database
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
+// REMOVE or comment out all mock authentication functions below:
+// function authenticateUser(email, password) {
+//     // Mock user database
+//     const users = JSON.parse(localStorage.getItem('users') || '[]');
+//     const user = users.find(u => u.email === email && u.password === password);
 
-    if (user) {
-        return {
-            id: user.id,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
-        };
-    }
+//     if (user) {
+//         return {
+//             id: user.id,
+//             name: `${user.firstName} ${user.lastName}`,
+//             email: user.email,
+//             firstName: user.firstName,
+//             lastName: user.lastName
+//         };
+//     }
 
-    // Default demo user
-    if (email === 'demo@mpi.com' && password === 'demo123') {
-        return {
-            id: 'demo',
-            name: 'Demo User',
-            email: 'demo@mpi.com',
-            firstName: 'Demo',
-            lastName: 'User'
-        };
-    }
+//     return null;
+// }
 
-    return null;
-}
+// function userExists(email) {
+//     const users = JSON.parse(localStorage.getItem('users') || '[]');
+//     return users.some(u => u.email === email);
+// }
 
-function userExists(email) {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    return users.some(u => u.email === email);
-}
+// function createUser(data) {
+//     const users = JSON.parse(localStorage.getItem('users') || '[]');
 
-function createUser(data) {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+//     const newUser = {
+//         id: Date.now().toString(),
+//         firstName: data.firstName,
+//         lastName: data.lastName,
+//         email: data.email,
+//         password: data.password, // In real app, this would be hashed
+//         createdAt: new Date().toISOString()
+//     };
 
-    const newUser = {
-        id: Date.now().toString(),
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        password: data.password, // In real app, this would be hashed
-        createdAt: new Date().toISOString()
-    };
+//     users.push(newUser);
+//     localStorage.setItem('users', JSON.stringify(users));
 
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    return {
-        id: newUser.id,
-        name: `${newUser.firstName} ${newUser.lastName}`,
-        email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName
-    };
-}
+//     return {
+//         id: newUser.id,
+//         name: `${newUser.firstName} ${newUser.lastName}`,
+//         email: newUser.email,
+//         firstName: newUser.firstName,
+//         lastName: newUser.lastName
+//     };
+// }

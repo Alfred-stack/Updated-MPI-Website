@@ -20,17 +20,17 @@
                 <h1>Welcome Back</h1>
                 <p>Sign in to your MPI® account</p>
             </div>
-            
+
             <div class="auth-body">
                 <div class="success-message" id="successMessage"></div>
-                
+
                 <form id="loginForm" novalidate>
                     <div class="form-group">
                         <label for="email" class="form-label">Email Address</label>
-                        <input type="email" id="email" name="email" class="form-input" required>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email address" required>
                         <div class="error-message"></div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="password" class="form-label">Password</label>
                         <div class="password-toggle">
@@ -41,21 +41,21 @@
                         </div>
                         <div class="error-message"></div>
                     </div>
-                    
+
                     <div class="form-checkbox">
                         <input type="checkbox" id="rememberMe" name="rememberMe">
                         <label for="rememberMe">Remember me for 30 days</label>
                     </div>
-                    
+
                     <button type="submit" class="auth-btn" data-original-text="Sign In">
                         Sign In
                     </button>
                 </form>
-                
+
                 <div class="auth-divider">
                     <span>or continue with</span>
                 </div>
-                
+
                 <div class="social-login">
                     <a href="#" class="social-btn">
                         <i class="fab fa-google"></i>
@@ -66,27 +66,26 @@
                         Facebook
                     </a>
                 </div>
-                
+
                 <div style="text-align: center; margin-top: 20px;">
                     <a href="#" style="color: #ffcc00; text-decoration: none; font-size: 0.9rem;">
                         Forgot your password?
                     </a>
                 </div>
             </div>
-            
+
             <div class="auth-footer">
                 <p>Don't have an account?</p>
                 <a href="register.html">Create your account</a>
             </div>
+
+            <!-- Admin Access Link -->
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                <a href="/admin" style="color: #666; text-decoration: none; font-size: 0.85rem; opacity: 0.7; transition: opacity 0.3s;">
+                    Admin Access
+                </a>
+            </div>
         </div>
-    </div>
-    
-    <!-- Demo Credentials Info -->
-    <div style="position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.8); color: white; padding: 15px; border-radius: 8px; font-size: 0.85rem; max-width: 300px; z-index: 10000;">
-        <h4 style="margin: 0 0 10px 0; color: #ffcc00;">Demo Credentials</h4>
-        <p style="margin: 5px 0;"><strong>Email:</strong> demo@mpi.com</p>
-        <p style="margin: 5px 0;"><strong>Password:</strong> demo123</p>
-        <p style="margin: 10px 0 0 0; font-size: 0.8rem; opacity: 0.8;">Use these credentials to test the login functionality</p>
     </div>
 
     <script src="js/auth.js"></script>

@@ -51,24 +51,24 @@ function initMobileMenu() {
 // Smooth Scrolling for Anchor Links
 function initSmoothScrolling() {
     const links = document.querySelectorAll('a[href^="#"]');
-    
+
     links.forEach(link => {
         link.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
-            
+
             if (href === '#') {
                 e.preventDefault();
                 return;
             }
-            
+
             const target = document.querySelector(href);
-            
+
             if (target) {
                 e.preventDefault();
-                
+
                 const headerHeight = document.querySelector('.header')?.offsetHeight || 0;
                 const targetPosition = target.offsetTop - headerHeight - 20;
-                
+
                 window.scrollTo({
                     top: targetPosition,
                     behavior: 'smooth'
@@ -104,23 +104,23 @@ function initAnimations() {
 // Newsletter Form Handling
 function initNewsletterForm() {
     const newsletterForms = document.querySelectorAll('.newsletter-form');
-    
+
     newsletterForms.forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const email = form.querySelector('input[type="email"]').value;
             const submitBtn = form.querySelector('.newsletter-submit');
-            
+
             if (!isValidEmail(email)) {
                 showNotification('Please enter a valid email address', 'error');
                 return;
             }
-            
+
             // Show loading state
             submitBtn.textContent = 'Submitting...';
             submitBtn.disabled = true;
-            
+
             // Simulate API call
             setTimeout(() => {
                 showNotification('Thank you for subscribing to our newsletter!', 'success');
@@ -143,7 +143,7 @@ function showNotification(message, type = 'info') {
     // Remove existing notifications
     const existingNotifications = document.querySelectorAll('.notification');
     existingNotifications.forEach(notification => notification.remove());
-    
+
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
@@ -152,7 +152,7 @@ function showNotification(message, type = 'info') {
             <button class="notification-close">&times;</button>
         </div>
     `;
-    
+
     // Add styles
     notification.style.cssText = `
         position: fixed;
@@ -168,16 +168,16 @@ function showNotification(message, type = 'info') {
         max-width: 400px;
         animation: slideInRight 0.3s ease-out;
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // Close button functionality
     const closeBtn = notification.querySelector('.notification-close');
     closeBtn.addEventListener('click', () => {
         notification.style.animation = 'slideOutRight 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
     });
-    
+
     // Auto remove after 5 seconds
     setTimeout(() => {
         if (notification.parentNode) {
@@ -191,7 +191,7 @@ function showNotification(message, type = 'info') {
 function checkAuthStatus() {
     const authButtons = document.querySelector('.auth-buttons');
     const user = getCurrentUser();
-    
+
     if (user && authButtons) {
         // User is logged in, show user menu
         authButtons.innerHTML = `
@@ -209,15 +209,15 @@ function checkAuthStatus() {
                 </div>
             </div>
         `;
-        
+
         // Add user menu functionality
         const userMenuToggle = document.querySelector('.user-menu-toggle');
         const userDropdown = document.querySelector('.user-dropdown');
-        
+
         userMenuToggle?.addEventListener('click', function() {
             userDropdown.classList.toggle('show');
         });
-        
+
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.user-menu')) {
@@ -227,23 +227,63 @@ function checkAuthStatus() {
     }
 }
 
-// Get Current User from localStorage
+// Authentication functions
+function getAuthToken() {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+}
+
 function getCurrentUser() {
     try {
-        const user = localStorage.getItem('currentUser');
-        return user ? JSON.parse(user) : null;
+        const userStr = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
+        return userStr ? JSON.parse(userStr) : null;
     } catch (error) {
         console.error('Error getting current user:', error);
         return null;
     }
 }
 
+function isAuthenticated() {
+    const token = getAuthToken();
+    const user = getCurrentUser();
+
+    // Check if token exists and is not expired
+    if (!token || !user) {
+        return false;
+    }
+
+    // Try to decode JWT token to check expiration
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        // Check if token is expired
+        if (payload.exp && payload.exp < currentTime) {
+            // Token expired, clear storage
+            clearAuthData();
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Token validation error:', error);
+        clearAuthData();
+        return false;
+    }
+}
+
+function clearAuthData() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('currentUser');
+}
+
 // Logout Function
 function logout() {
-    localStorage.removeItem('currentUser');
+    clearAuthData();
     showNotification('You have been logged out successfully', 'success');
     setTimeout(() => {
-        window.location.reload();
+        window.location.href = 'login.html';
     }, 1500);
 }
 
@@ -286,7 +326,7 @@ style.textContent = `
             opacity: 1;
         }
     }
-    
+
     @keyframes slideOutRight {
         from {
             transform: translateX(0);
@@ -297,18 +337,18 @@ style.textContent = `
             opacity: 0;
         }
     }
-    
+
     .animate-element {
         opacity: 0;
         transform: translateY(30px);
         transition: all 0.6s ease-out;
     }
-    
+
     .animate-element.animate-in {
         opacity: 1;
         transform: translateY(0);
     }
-    
+
     .user-dropdown {
         position: absolute;
         top: 100%;
@@ -321,22 +361,22 @@ style.textContent = `
         display: none;
         z-index: 1000;
     }
-    
+
     .user-dropdown.show {
         display: block;
     }
-    
+
     .user-menu {
         position: relative;
     }
-    
+
     .notification-content {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 15px;
     }
-    
+
     .notification-close {
         background: none;
         border: none;
@@ -350,9 +390,24 @@ style.textContent = `
         align-items: center;
         justify-content: center;
     }
-    
+
     .notification-close:hover {
         opacity: 1;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 0.1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.2;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 0.1;
+        }
     }
 `;
 document.head.appendChild(style);
@@ -360,3 +415,7 @@ document.head.appendChild(style);
 // Export functions for global use
 window.logout = logout;
 window.showNotification = showNotification;
+window.getAuthToken = getAuthToken;
+window.getCurrentUser = getCurrentUser;
+window.isAuthenticated = isAuthenticated;
+window.clearAuthData = clearAuthData;

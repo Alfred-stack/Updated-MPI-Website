@@ -172,7 +172,93 @@ router.post('/login', [
     }
 });
 
-// Admin login endpoint
+// Admin login endpoint (alternative route)
+router.post('/admin-login', [
+    body('username').notEmpty().withMessage('Username is required'),
+    body('password').notEmpty().withMessage('Password is required'),
+], async (req, res) => {
+    try {
+        // Check validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        const { username, password } = req.body;
+
+        // Get admin user
+        const admin = await dbHelpers.getAdminByUsername(username);
+        if (!admin) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid username or password'
+            });
+        }
+
+        // Check if admin is active
+        if (!admin.is_active) {
+            return res.status(401).json({
+                success: false,
+                message: 'Admin account is deactivated'
+            });
+        }
+
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid username or password'
+            });
+        }
+
+        // Update last login
+        const { db } = require('../database/init');
+        db.run('UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [admin.id]);
+
+        // Log activity
+        await dbHelpers.logActivity({
+            adminId: admin.id,
+            action: 'admin_login',
+            description: `Admin logged in: ${username}`,
+            ipAddress: req.ip,
+            userAgent: req.get('User-Agent')
+        });
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { adminId: admin.id, username: admin.username, role: admin.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        res.json({
+            success: true,
+            message: 'Admin login successful',
+            token,
+            admin: {
+                id: admin.id,
+                username: admin.username,
+                email: admin.email,
+                role: admin.role
+            }
+        });
+
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Admin login failed',
+            error: error.message
+        });
+    }
+});
+
+// Admin login endpoint (original route)
 router.post('/admin/login', [
     body('username').notEmpty().withMessage('Username is required'),
     body('password').notEmpty().withMessage('Password is required'),
@@ -261,7 +347,7 @@ router.post('/admin/login', [
 // Verify token endpoint
 router.get('/verify', (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     if (!token) {
         return res.status(401).json({
             success: false,
@@ -271,11 +357,24 @@ router.get('/verify', (req, res) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        res.json({
-            success: true,
-            message: 'Token is valid',
-            user: decoded
-        });
+
+        // Ensure the decoded token contains admin-specific fields
+        if (decoded.adminId) {
+            res.json({
+                success: true,
+                message: 'Token is valid',
+                user: {
+                    adminId: decoded.adminId,
+                    username: decoded.username,
+                    role: decoded.role
+                }
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                message: 'Invalid admin token'
+            });
+        }
     } catch (error) {
         res.status(401).json({
             success: false,

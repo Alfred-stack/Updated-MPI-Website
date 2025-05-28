@@ -1,27 +1,14 @@
 #!/usr/bin/env node
 
+require('dotenv').config(); // <-- Ensure .env is loaded
+
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
 console.log('🚀 Setting up MPI Strategy Web Application...\n');
 
-// Create necessary directories
-const directories = [
-    'database',
-    'uploads',
-    'uploads/receipts',
-    'logs'
-];
-
-directories.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-        console.log(`✅ Created directory: ${dir}`);
-    }
-});
-
-// Check if .env file exists
+// Check if .env file exists BEFORE initializing database
 if (!fs.existsSync('.env')) {
     console.log('❌ .env file not found. Please create it with the required environment variables.');
     console.log('📝 Example .env file:');
@@ -38,6 +25,21 @@ BITCOIN_WALLET_ADDRESS=1DhLUp1pkeitZremqKu8fA2BdB9zqZ21QC
     process.exit(1);
 }
 
+// Create necessary directories
+const directories = [
+    'database',
+    'uploads',
+    'uploads/receipts',
+    'logs'
+];
+
+directories.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`✅ Created directory: ${dir}`);
+    }
+});
+
 // Initialize database
 console.log('\n📊 Initializing database...');
 try {
@@ -49,59 +51,8 @@ try {
     process.exit(1);
 }
 
-// Create sample data (optional)
-console.log('\n📝 Creating sample data...');
-try {
-    const { db } = require('./database/init');
-    
-    // Create a demo user with sample investment data
-    const bcrypt = require('bcryptjs');
-    const demoPassword = bcrypt.hashSync('demo123', 12);
-    
-    db.run(`
-        INSERT OR IGNORE INTO users (first_name, last_name, email, password, is_active, email_verified)
-        VALUES ('Demo', 'User', 'demo@mpi.com', ?, 1, 1)
-    `, [demoPassword], function(err) {
-        if (err) {
-            console.error('Error creating demo user:', err);
-        } else if (this.changes > 0) {
-            console.log('✅ Demo user created: demo@mpi.com / demo123');
-            
-            // Add sample investment data for demo user
-            db.run(`
-                INSERT OR IGNORE INTO user_investments 
-                (user_id, initial_deposit, monthly_topup, total_deposited, current_profit, target_cash, current_balance, progress_percentage)
-                VALUES (?, 10000.00, 1500.00, 11500.00, 2340.00, 500000.00, 13840.00, 2.77)
-            `, [this.lastID], function(err) {
-                if (err) {
-                    console.error('Error creating demo investment:', err);
-                } else {
-                    console.log('✅ Demo investment data created');
-                }
-            });
-            
-            // Add sample transactions for demo user
-            const sampleTransactions = [
-                ['deposit', 10000.00, 'Initial deposit'],
-                ['topup', 1500.00, 'Monthly contribution'],
-                ['profit', 2340.00, 'Interest credited']
-            ];
-            
-            sampleTransactions.forEach(([type, amount, description]) => {
-                db.run(`
-                    INSERT INTO transactions 
-                    (user_id, transaction_type, amount, description, status, created_at)
-                    VALUES (?, ?, ?, ?, 'confirmed', datetime('now', '-' || ? || ' days'))
-                `, [this.lastID, type, amount, description, Math.floor(Math.random() * 30)]);
-            });
-            
-            console.log('✅ Sample transactions created');
-        }
-    });
-    
-} catch (error) {
-    console.error('❌ Sample data creation failed:', error.message);
-}
+// Database initialization completed - no demo data created
+console.log('\n✅ Database setup completed successfully!');
 
 // Create production scripts
 console.log('\n📜 Creating production scripts...');
@@ -311,9 +262,10 @@ chmod +x start.sh
 - Username: mpi_admin
 - Password: MPI@Admin2024!Secure
 
-## Demo User
-- Email: demo@mpi.com
-- Password: demo123
+## User Registration
+Users can register and login through the web interface at:
+- Registration: http://localhost:3000/register
+- Login: http://localhost:3000/login
 
 ## Bitcoin Wallet
 - Address: 1DhLUp1pkeitZremqKu8fA2BdB9zqZ21QC
@@ -338,7 +290,7 @@ console.log('1. Install dependencies: npm install');
 console.log('2. Start the application: npm start');
 console.log('3. Access the application: http://localhost:3000');
 console.log('4. Admin panel: http://localhost:3000/admin');
-console.log('5. Demo login: demo@mpi.com / demo123');
+console.log('5. Register new users at: http://localhost:3000/register');
 console.log('\n💰 Bitcoin Wallet: 1DhLUp1pkeitZremqKu8fA2BdB9zqZ21QC');
 console.log('\n🔐 Admin Credentials:');
 console.log('   Username: mpi_admin');

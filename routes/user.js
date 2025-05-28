@@ -8,7 +8,7 @@ const router = express.Router();
 // Middleware to verify user token
 const verifyUserToken = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     if (!token) {
         return res.status(401).json({
             success: false,
@@ -49,27 +49,17 @@ router.get('/dashboard', verifyUserToken, async (req, res) => {
         }
 
         // Get investment data
-        const investment = await new Promise((resolve, reject) => {
-            db.get(`
-                SELECT * FROM user_investments WHERE user_id = ?
-            `, [userId], (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
-            });
-        });
+        const investmentStmt = db.prepare('SELECT * FROM user_investments WHERE user_id = ?');
+        const investment = investmentStmt.get(userId);
 
         // Get recent transactions
-        const transactions = await new Promise((resolve, reject) => {
-            db.all(`
-                SELECT * FROM transactions 
-                WHERE user_id = ? 
-                ORDER BY created_at DESC 
-                LIMIT 10
-            `, [userId], (err, rows) => {
-                if (err) reject(err);
-                else resolve(rows || []);
-            });
-        });
+        const transactionsStmt = db.prepare(`
+            SELECT * FROM transactions
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+            LIMIT 10
+        `);
+        const transactions = transactionsStmt.all(userId);
 
         // Calculate progress percentage
         let progressPercentage = 0;
@@ -82,11 +72,12 @@ router.get('/dashboard', verifyUserToken, async (req, res) => {
 
         // Update progress percentage in database
         if (investment) {
-            db.run(`
-                UPDATE user_investments 
-                SET progress_percentage = ?, last_updated = CURRENT_TIMESTAMP 
+            const updateStmt = db.prepare(`
+                UPDATE user_investments
+                SET progress_percentage = ?, last_updated = CURRENT_TIMESTAMP
                 WHERE user_id = ?
-            `, [progressPercentage, userId]);
+            `);
+            updateStmt.run(progressPercentage, userId);
         }
 
         res.json({
@@ -127,7 +118,7 @@ router.get('/dashboard', verifyUserToken, async (req, res) => {
 router.get('/deposit-info', verifyUserToken, async (req, res) => {
     try {
         const bitcoinAddress = process.env.BITCOIN_WALLET_ADDRESS;
-        
+
         // Generate QR code for the Bitcoin address
         const qrCodeDataURL = await QRCode.toDataURL(bitcoinAddress, {
             width: 256,
@@ -183,14 +174,8 @@ router.post('/withdraw', [
         const { amount, withdrawalAddress, reason } = req.body;
 
         // Get user's current balance
-        const investment = await new Promise((resolve, reject) => {
-            db.get(`
-                SELECT current_balance FROM user_investments WHERE user_id = ?
-            `, [userId], (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
-            });
-        });
+        const investmentStmt = db.prepare('SELECT current_balance FROM user_investments WHERE user_id = ?');
+        const investment = investmentStmt.get(userId);
 
         if (!investment || investment.current_balance < amount) {
             return res.status(400).json({
@@ -200,16 +185,13 @@ router.post('/withdraw', [
         }
 
         // Create withdrawal request
-        const requestId = await new Promise((resolve, reject) => {
-            db.run(`
-                INSERT INTO withdrawal_requests 
-                (user_id, amount, withdrawal_address, reason)
-                VALUES (?, ?, ?, ?)
-            `, [userId, amount, withdrawalAddress, reason || 'User withdrawal request'], function(err) {
-                if (err) reject(err);
-                else resolve(this.lastID);
-            });
-        });
+        const withdrawalStmt = db.prepare(`
+            INSERT INTO withdrawal_requests
+            (user_id, amount, withdrawal_address, reason)
+            VALUES (?, ?, ?, ?)
+        `);
+        const result = withdrawalStmt.run(userId, amount, withdrawalAddress, reason || 'User withdrawal request');
+        const requestId = result.lastInsertRowid;
 
         // Log activity
         await dbHelpers.logActivity({
@@ -354,7 +336,7 @@ router.put('/profile', [
         // Update user profile
         await new Promise((resolve, reject) => {
             db.run(`
-                UPDATE users 
+                UPDATE users
                 SET first_name = COALESCE(?, first_name),
                     last_name = COALESCE(?, last_name),
                     phone = COALESCE(?, phone),

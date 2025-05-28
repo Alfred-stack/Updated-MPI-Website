@@ -203,6 +203,8 @@ router.put('/users/:userId/investment', [
     body('monthlyTopup').optional().isFloat({ min: 0 }),
     body('currentProfit').optional().isFloat({ min: 0 }),
     body('targetCash').optional().isFloat({ min: 0 }),
+    body('currentBalance').optional().isFloat({ min: 0 }),
+    body('totalDeposited').optional().isFloat({ min: 0 }),
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -215,7 +217,7 @@ router.put('/users/:userId/investment', [
         }
 
         const userId = req.params.userId;
-        const { initialDeposit, monthlyTopup, currentProfit, targetCash } = req.body;
+        const { initialDeposit, monthlyTopup, currentProfit, targetCash, currentBalance, totalDeposited } = req.body;
 
         // Check if user exists
         const user = await dbHelpers.getUserById(userId);
@@ -242,9 +244,10 @@ router.put('/users/:userId/investment', [
         const newCurrentProfit = currentProfit !== undefined ? currentProfit : (currentInvestment?.current_profit || 0);
         const newTargetCash = targetCash !== undefined ? targetCash : (currentInvestment?.target_cash || 500000);
 
-        const totalDeposited = newInitialDeposit + newMonthlyTopup;
-        const currentBalance = totalDeposited + newCurrentProfit;
-        const progressPercentage = newTargetCash > 0 ? Math.min((currentBalance / newTargetCash) * 100, 100) : 0;
+        // Allow admin to directly set these values or calculate them
+        const newTotalDeposited = totalDeposited !== undefined ? totalDeposited : (newInitialDeposit + newMonthlyTopup);
+        const newCurrentBalance = currentBalance !== undefined ? currentBalance : (newTotalDeposited + newCurrentProfit);
+        const progressPercentage = newTargetCash > 0 ? Math.min((newCurrentBalance / newTargetCash) * 100, 100) : 0;
 
         // Update or insert investment record
         if (currentInvestment) {
@@ -255,8 +258,8 @@ router.put('/users/:userId/investment', [
                         current_profit = ?, target_cash = ?, current_balance = ?,
                         progress_percentage = ?, last_updated = CURRENT_TIMESTAMP
                     WHERE user_id = ?
-                `, [newInitialDeposit, newMonthlyTopup, totalDeposited, newCurrentProfit,
-                    newTargetCash, currentBalance, progressPercentage, userId], function(err) {
+                `, [newInitialDeposit, newMonthlyTopup, newTotalDeposited, newCurrentProfit,
+                    newTargetCash, newCurrentBalance, progressPercentage, userId], function(err) {
                     if (err) reject(err);
                     else resolve();
                 });
@@ -268,8 +271,8 @@ router.put('/users/:userId/investment', [
                     (user_id, initial_deposit, monthly_topup, total_deposited,
                      current_profit, target_cash, current_balance, progress_percentage)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                `, [userId, newInitialDeposit, newMonthlyTopup, totalDeposited,
-                    newCurrentProfit, newTargetCash, currentBalance, progressPercentage], function(err) {
+                `, [userId, newInitialDeposit, newMonthlyTopup, newTotalDeposited,
+                    newCurrentProfit, newTargetCash, newCurrentBalance, progressPercentage], function(err) {
                     if (err) reject(err);
                     else resolve();
                 });
@@ -292,10 +295,10 @@ router.put('/users/:userId/investment', [
             data: {
                 initialDeposit: newInitialDeposit,
                 monthlyTopup: newMonthlyTopup,
-                totalDeposited,
+                totalDeposited: newTotalDeposited,
                 currentProfit: newCurrentProfit,
                 targetCash: newTargetCash,
-                currentBalance,
+                currentBalance: newCurrentBalance,
                 progressPercentage: Math.round(progressPercentage * 100) / 100
             }
         });
@@ -952,6 +955,192 @@ async function sendInvestmentSummaryEmail(user, investment, transactions) {
         console.error('Email send error:', error);
         return false;
     }
+}
+
+// Get all withdrawals
+router.get('/withdrawals', verifyAdminToken, async (req, res) => {
+    try {
+        const withdrawals = await new Promise((resolve, reject) => {
+            db.all(`
+                SELECT wr.*, u.first_name, u.last_name, u.email
+                FROM withdrawal_requests wr
+                JOIN users u ON wr.user_id = u.id
+                ORDER BY wr.requested_at DESC
+            `, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows || []);
+            });
+        });
+
+        res.json({
+            success: true,
+            data: {
+                withdrawals
+            }
+        });
+
+    } catch (error) {
+        console.error('Get withdrawals error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to load withdrawals',
+            error: error.message
+        });
+    }
+});
+
+// Get all transactions
+router.get('/transactions', verifyAdminToken, async (req, res) => {
+    try {
+        const transactions = await new Promise((resolve, reject) => {
+            db.all(`
+                SELECT t.*, u.first_name, u.last_name, u.email
+                FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                ORDER BY t.created_at DESC
+                LIMIT 100
+            `, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows || []);
+            });
+        });
+
+        res.json({
+            success: true,
+            data: {
+                transactions
+            }
+        });
+
+    } catch (error) {
+        console.error('Get transactions error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to load transactions',
+            error: error.message
+        });
+    }
+});
+
+// Generate withdrawal receipt
+async function generateWithdrawalReceipt(withdrawal, transactionHash) {
+    try {
+        const receiptData = {
+            receiptId: `WR-${withdrawal.id}-${Date.now()}`,
+            date: new Date().toISOString(),
+            userInfo: {
+                name: `${withdrawal.first_name} ${withdrawal.last_name}`,
+                email: withdrawal.email
+            },
+            withdrawal: {
+                amount: withdrawal.amount,
+                address: withdrawal.withdrawal_address,
+                transactionHash: transactionHash || 'N/A',
+                requestDate: withdrawal.requested_at,
+                processedDate: new Date().toISOString()
+            },
+            company: {
+                name: 'MPI® Strategy',
+                email: 'Mpisecuredcomparedinterest@gmail.com',
+                phone: '+1 239 487 4213'
+            }
+        };
+
+        // Create receipts directory if it doesn't exist
+        const receiptsDir = path.join(__dirname, '../receipts');
+        if (!fs.existsSync(receiptsDir)) {
+            fs.mkdirSync(receiptsDir, { recursive: true });
+        }
+
+        // Generate receipt HTML
+        const receiptHtml = generateReceiptHtml(receiptData);
+        const receiptPath = path.join(receiptsDir, `${receiptData.receiptId}.html`);
+
+        fs.writeFileSync(receiptPath, receiptHtml);
+
+        return `/receipts/${receiptData.receiptId}.html`;
+    } catch (error) {
+        console.error('Receipt generation error:', error);
+        return null;
+    }
+}
+
+// Generate receipt HTML
+function generateReceiptHtml(data) {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdrawal Receipt - ${data.receiptId}</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #ffcc00; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { color: #ffcc00; font-size: 2rem; font-weight: bold; }
+        .receipt-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .label { font-weight: bold; }
+        .amount { font-size: 1.5rem; color: #28a745; font-weight: bold; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e4e4e4; color: #666; }
+        @media print { body { margin: 0; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">MPI® Strategy</div>
+        <h2>Withdrawal Receipt</h2>
+        <p>Receipt ID: ${data.receiptId}</p>
+    </div>
+
+    <div class="receipt-info">
+        <h3>Withdrawal Details</h3>
+        <div class="info-row">
+            <span class="label">User:</span>
+            <span>${data.userInfo.name}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Email:</span>
+            <span>${data.userInfo.email}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Amount:</span>
+            <span class="amount">$${parseFloat(data.withdrawal.amount).toFixed(2)}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Withdrawal Address:</span>
+            <span>${data.withdrawal.address}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Transaction Hash:</span>
+            <span style="word-break: break-all;">${data.withdrawal.transactionHash}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Request Date:</span>
+            <span>${new Date(data.withdrawal.requestDate).toLocaleString()}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Processed Date:</span>
+            <span>${new Date(data.withdrawal.processedDate).toLocaleString()}</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>${data.company.name}</strong></p>
+        <p>Email: ${data.company.email} | Phone: ${data.company.phone}</p>
+        <p>This is an official withdrawal receipt. Please keep it for your records.</p>
+    </div>
+
+    <script>
+        // Auto-print functionality
+        window.onload = function() {
+            if (window.location.search.includes('print=true')) {
+                window.print();
+            }
+        }
+    </script>
+</body>
+</html>`;
 }
 
 module.exports = router;
